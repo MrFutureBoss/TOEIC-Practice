@@ -53,7 +53,7 @@ const listeningSchema = new mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

@@ -13,7 +13,7 @@ const answerSchema = new mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

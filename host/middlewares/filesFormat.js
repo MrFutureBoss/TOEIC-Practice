@@ -1,7 +1,6 @@
-import express from "express";
-import cloudinary from "../utilities/cloudinary.js";
-import fs from "fs";
+import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 // Định nghĩa các định dạng file được chấp nhận
 const allowedFormats = {
@@ -21,32 +20,59 @@ const getFileType = (fileExtension) => {
   return null; // Nếu không thuộc loại nào
 };
 
+// Cấu hình multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(process.cwd(), "uploads"); // Sử dụng process.cwd() để lấy đường dẫn tuyệt đối
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // Giới hạn 10MB
+});
+
 // Middleware để xử lý upload nhiều file
 const uploadMiddleware = (fileType) => {
   return (req, res, next) => {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).send("No files uploaded.");
-    }
+    const uploadHandler = upload.array("file");
 
-    const validFiles = req.files.filter((file) => {
-      const fileExtension = path.extname(file.name).toLowerCase().slice(1); // Lấy phần mở rộng của file
-      return allowedFormats[fileType].includes(fileExtension);
+    uploadHandler(req, res, (err) => {
+      if (err) {
+        console.error("Multer error:", err); // Log lỗi từ multer
+        return res.status(400).send("Error uploading files.");
+      }
+
+      if (!req.files || req.files.length === 0) {
+        console.error("No files uploaded."); // Log nếu không có file nào được upload
+        return res.status(400).send("No files uploaded.");
+      }
+
+      console.log("Uploaded files:", req.files); // Log các file đã upload
+
+      const validFiles = req.files.filter((file) => {
+        const fileExtension = path.extname(file.originalname).toLowerCase().slice(1);
+        return allowedFormats[fileType].includes(fileExtension);
+      });
+
+      if (validFiles.length === 0) {
+        console.error("Invalid file format."); // Log nếu định dạng file không hợp lệ
+        return res.status(400).send(`Only ${fileType} files are allowed!`);
+      }
+
+      const tempFilePaths = validFiles.map((file) => file.path);
+      req.tempFilePaths = tempFilePaths;
+
+      console.log("Temporary file paths:", tempFilePaths); // Log đường dẫn file tạm thời
+      next();
     });
-
-    if (validFiles.length === 0) {
-      return res.status(400).send(`Only ${fileType} files are allowed!`);
-    }
-
-    // Lưu các file tạm thời vào thư mục uploads
-    const tempFilePaths = validFiles.map((file) => {
-      const tempFilePath = path.join(__dirname, "uploads", file.name);
-      file.mv(tempFilePath); // Di chuyển file vào thư mục tạm thời
-      return tempFilePath;
-    });
-
-    // Gắn các file tạm thời vào request để sử dụng trong controller
-    req.tempFilePaths = tempFilePaths;
-    next();
   };
 };
 

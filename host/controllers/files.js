@@ -3,14 +3,16 @@ import fs from "fs";
 
 export const uploadFiles = async (req, res) => {
   try {
-    const tempFilePaths = req.tempFilePaths; // Lấy danh sách các file tạm thời
+    const tempFilePaths = req.tempFilePaths;
+    console.log("Processing files:", tempFilePaths); // Log các file cần xử lý
+
     const uploadResults = [];
 
-    // Upload từng file lên Cloudinary
     for (const filePath of tempFilePaths) {
+      console.log("Uploading file:", filePath); // Log file đang được upload
       const result = await cloudinary.uploader.upload(filePath, {
-        folder: "TOEIC", // Thư mục trên Cloudinary
-        resource_type: "auto", // Tự động phát hiện loại file
+        folder: "TOEIC",
+        resource_type: "auto",
       });
 
       uploadResults.push({
@@ -18,8 +20,8 @@ export const uploadFiles = async (req, res) => {
         publicId: result.public_id,
       });
 
-      // Xóa file tạm thời sau khi upload thành công
       fs.unlinkSync(filePath);
+      console.log("Deleted temporary file:", filePath); // Log file tạm thời đã xóa
     }
 
     return res.status(200).json({
@@ -27,7 +29,8 @@ export const uploadFiles = async (req, res) => {
       datas: uploadResults,
     });
   } catch (error) {
-    // Xóa các file tạm thời nếu có lỗi
+    console.error("Controller error:", error); // Log lỗi trong controller
+
     if (req.tempFilePaths) {
       req.tempFilePaths.forEach((filePath) => {
         if (fs.existsSync(filePath)) {
