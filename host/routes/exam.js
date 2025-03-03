@@ -9,3 +9,4 @@ ExamRouter.get("/list", examController.getExam);
 ExamRouter.post("/create", examController.createExam)
 
 export default ExamRouter;
+ 
