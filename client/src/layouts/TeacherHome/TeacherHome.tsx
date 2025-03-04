@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Breadcrumb, Layout, theme } from 'antd';
 import '../../styles/AdminHome.css';
-import AdminHeader from '../../layouts/AdminHome/Header';
-import AdminSider from '../../layouts/AdminHome/Sider';
+import TeacherHeader from './Header';
+import TeacherSider from './Sider';
+import { Outlet } from 'react-router-dom';
 
 const { Content } = Layout;
 
-const AdminHome: React.FC = () => {
+const TeacherHome: React.FC = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -14,9 +15,9 @@ const AdminHome: React.FC = () => {
 
   return (
     <Layout className='!h-screen'>
-        <AdminHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+        <TeacherHeader collapsed={collapsed} setCollapsed={setCollapsed} />
       <Layout>
-        <AdminSider collapsed={collapsed} />
+        <TeacherSider collapsed={collapsed} />
         <Layout style={{ padding: '0 24px 24px' }}>
           <Breadcrumb
             items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
@@ -31,7 +32,7 @@ const AdminHome: React.FC = () => {
               borderRadius: borderRadiusLG,
             }}
           >
-            Content
+            <Outlet/>
           </Content>
         </Layout>
       </Layout>
@@ -40,4 +41,4 @@ const AdminHome: React.FC = () => {
 };
 
 
-export default AdminHome;
+export default TeacherHome;

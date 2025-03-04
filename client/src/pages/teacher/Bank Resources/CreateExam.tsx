@@ -1,6 +1,6 @@
 import React from 'react'
 
-export function CreateExam = () => {
+export const AdminHome: React.FC = () => {
   return (
     <div>CreateExam</div>
   )

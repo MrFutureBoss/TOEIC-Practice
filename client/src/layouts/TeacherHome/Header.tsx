@@ -2,7 +2,7 @@ import { Button, Layout, Menu, MenuProps} from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons';
 const { Header} = Layout;
 
-const AdminHeader: React.FC <{collapsed: boolean ; setCollapsed: React.Dispatch<React.SetStateAction<boolean>>}> = ({collapsed, setCollapsed}) => {
+const TeacherHeader: React.FC <{collapsed: boolean ; setCollapsed: React.Dispatch<React.SetStateAction<boolean>>}> = ({collapsed, setCollapsed}) => {
         const items1: MenuProps['items'] = ['1', '2', '3'].map((key) => ({
           key,
           label: `nav ${key}`,
@@ -41,4 +41,4 @@ const AdminHeader: React.FC <{collapsed: boolean ; setCollapsed: React.Dispatch<
 
 }
 
-export default AdminHeader
+export default TeacherHeader;
