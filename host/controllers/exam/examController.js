@@ -5,16 +5,36 @@ import Reading from "../../models/exam/readingModel.js";
 // import Writing from "../../models/exam/writingModel.js";
 import Question from "../../models/exam//questionModel.js";
 import Answer from "../../models/exam/answerModel.js";
-
+import paginate from "../../utilities/paginate.js";
 //List all exam data
 const getExam = async (req, res) => {
+
+  const { page = 1, limit = 10 } = req.query;
   try {
-    const exam = await Exam.find()
-      .populate("topic")
-      .populate("levels")
-      .populate("listenings")
-      .populate("readings");
-    res.status(200).json(exam);
+    const { results, total, totalPages, currentPage, limit: paginateLimit } = await paginate(Exam, {}, { page, limit });
+
+    // Populate detailed refs
+    const populatedExams = await Promise.all(
+      results.map(async (exam) => {
+        const populatedExam = await Exam.populate(exam, [
+          { path: "topic" },
+          { path: "levels" },
+          { path: "listenings", populate: { path: "questions", populate: { path: "answers" } } },
+          { path: "readings", populate: { path: "questions", populate: { path: "answers" } } },
+        ]);
+        return populatedExam;
+      })
+    );
+
+    res.status(200).json({
+      data: populatedExams,
+      pagination: {
+        total,
+        totalPages,
+        currentPage,
+        limit: paginateLimit,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,
